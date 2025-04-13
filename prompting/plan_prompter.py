@@ -24,8 +24,11 @@ Each <coord> is a tuple (x,y,z) for gripper location, follow these steps to plan
         e.g. given path [(0.1, 0.2, 0.3), (0.2, 0.2. 0.3), (0.3, 0.4. 0.7)], the distance between steps (0.1, 0.2, 0.3)-(0.2, 0.2. 0.3) is too low, and between (0.2, 0.2. 0.3)-(0.3, 0.4. 0.7) is too high. You can change the path to [(0.1, 0.2, 0.3), (0.15, 0.3. 0.5), (0.3, 0.4. 0.7)] 
     If a plan failed to execute, re-plan to choose more feasible steps in each PATH, or choose different actions.
 """
-OPENAI_KEY = str(json.load(open("openai_key.json")))
-openai.api_key = OPENAI_KEY
+# OPENAI_KEY = str(json.load(open("openai_key.json")))
+# openai.api_key = OPENAI_KEY
+openai.api_key = None
+
+from prompting.llm_test.llm_module import Agent, API_URL, API_URL_R17B, API_KEY_SIQI, API_KEY_R17B
 
 
 def get_chat_prompt(env: MujocoSimEnv):
@@ -237,17 +240,38 @@ Re-format to strictly follow [Action Output Instruction]!
         for n in range(self.max_api_queries):
             print('querying {}th time'.format(n))
             try:
-                response = openai.ChatCompletion.create(
-                    model=self.llm_source,
+                # response = openai.ChatCompletion.create(
+                #     model=self.llm_source,
+                #     messages=[
+                #         # {"role": "user", "content": user_prompt},
+                #         {"role": "system", "content": system_prompt},                                    
+                #     ],
+                #     max_tokens=self.max_tokens,
+                #     temperature=self.temperature, 
+                #     )
+                # usage = response['usage']
+                # response = response['choices'][0]['message']["content"]
+
+                agent = Agent(
+                        # model="gpt-4o-2024-11-20",
+                        model="gpt-4",
+                        api_url=API_URL,
+                        api_key=API_KEY_SIQI,
+                )
+                
+                _response = agent.respond_once_raw(
                     messages=[
                         # {"role": "user", "content": user_prompt},
                         {"role": "system", "content": system_prompt},                                    
                     ],
                     max_tokens=self.max_tokens,
-                    temperature=self.temperature, 
-                    )
-                usage = response['usage']
-                response = response['choices'][0]['message']["content"]
+                    temperature=self.temperature,
+                )
+
+                # print(response)
+                response = agent.answer_from_response(_response)
+                usage = agent.usage_from_response(_response)
+
                 print('======= response ======= \n ', response)
                 print('======= usage ======= \n ', usage)
                 break

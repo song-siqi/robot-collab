@@ -13,9 +13,12 @@ from rocobench.envs import MujocoSimEnv, EnvState
 from .feedback import FeedbackManager
 from .parser import LLMResponseParser
 
-assert os.path.exists("openai_key.json"), "Please put your OpenAI API key in a string in robot-collab/openai_key.json"
-OPENAI_KEY = str(json.load(open("openai_key.json")))
-openai.api_key = OPENAI_KEY
+# assert os.path.exists("openai_key.json"), "Please put your OpenAI API key in a string in robot-collab/openai_key.json"
+# OPENAI_KEY = str(json.load(open("openai_key.json")))
+# openai.api_key = OPENAI_KEY
+openai.api_key = None
+
+from prompting.llm_test.llm_module import Agent, API_URL, API_URL_R17B, API_KEY_SIQI, API_KEY_R17B
 
 PATH_PLAN_INSTRUCTION="""
 [Path Plan Instruction]
@@ -263,21 +266,46 @@ Your response is:
         for n in range(max_query):
             print('querying {}th time'.format(n))
             try:
-                response = openai.ChatCompletion.create(
-                    model=self.llm_source, 
+                # response = openai.ChatCompletion.create(
+                #     model=self.llm_source, 
+                #     messages=[
+                #         # {"role": "user", "content": ""},
+                #         {"role": "system", "content": system_prompt+user_prompt},                                    
+                #     ],
+                #     max_tokens=self.max_tokens,
+                #     temperature=self.temperature,
+                #     )
+                # usage = response['usage']
+                # response = response['choices'][0]['message']["content"]
+
+                import requests
+                import json
+                
+                agent = Agent(
+                        # model="gpt-4o-2024-11-20",
+                        model="gpt-4",
+                        api_url=API_URL,
+                        api_key=API_KEY_SIQI,
+                )
+
+                _response = agent.respond_once_raw(
                     messages=[
                         # {"role": "user", "content": ""},
                         {"role": "system", "content": system_prompt+user_prompt},                                    
                     ],
                     max_tokens=self.max_tokens,
                     temperature=self.temperature,
-                    )
-                usage = response['usage']
-                response = response['choices'][0]['message']["content"]
+                )
+
+                # print(response)
+                response = agent.answer_from_response(_response)
+                usage = agent.usage_from_response(_response)
+
                 print('======= response ======= \n ', response)
                 print('======= usage ======= \n ', usage)
                 break
-            except:
+            except Exception as e:
+                print(f"Error: {e}")
                 print("API error, try again")
             continue
         # breakpoint()

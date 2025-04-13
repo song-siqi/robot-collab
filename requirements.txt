@@ -1,4 +1,4 @@
-anthropic==0.2.9
+# anthropic==0.2.9
 dm-control==1.0.8
 matplotlib==3.5.1
 mujoco==2.3.0
@@ -12,3 +12,4 @@ scipy==1.8.0
 seaborn==0.11.2
 wandb==0.15.2
 pydantic==1.10.4
+open3d

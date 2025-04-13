@@ -255,7 +255,7 @@ class LLMRunner:
                 else:
                     # breakpoint()
                     plan_success, reason = policy.plan(env)
-                    logging.info(f"Stesp: {step} Plan success: {plan_success}, reason: {reason}")
+                    logging.info(f"Step: {step} Plan success: {plan_success}, reason: {reason}")
                     if plan_success:
                         logging.info(f"Execute the plan for {len(policy.action_buffer)} steps")
 
